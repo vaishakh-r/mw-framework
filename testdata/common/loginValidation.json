@@ -1,0 +1,4 @@
+{
+  "badEmails": ["plainaddress", "abc@", "abc@domain"],
+  "shortPassword": "123"
+}

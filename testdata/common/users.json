@@ -1,0 +1,4 @@
+{
+  "valid":   { "username": "qa@example.com", "password": "${TEST_PASSWORD:-changeme}" },
+  "invalid": { "username": "nobody@example.com", "password": "wrong" }
+}

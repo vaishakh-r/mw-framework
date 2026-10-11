@@ -1,0 +1,21 @@
+{
+  "name": "mw-framework",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "doctor": "mobilewright doctor",
+    "typecheck": "tsc --noEmit",
+    "test": "mobilewright test",
+    "test:ios": "mobilewright test --project=ios",
+    "test:android": "mobilewright test --project=android",
+    "test:smoke": "mobilewright test --grep @smoke",
+    "report": "mobilewright show-report"
+  },
+  "devDependencies": {
+    "@mobilewright/test": "latest",
+    "@types/node": "^20.0.0",
+    "dotenv": "^18.0.7",
+    "mobilewright": "latest",
+    "typescript": "^5.4.0"
+  }
+}
