@@ -106,7 +106,7 @@ tests/                      specs
 
 ## Setup
 
-Prerequisites: Node.js 20+, Xcode with an iOS simulator (iOS) and/or Android Studio with an emulator
+Prerequisites: Node.js 22.12+ (required by Mobilewright), Xcode with an iOS simulator (iOS) and/or Android Studio with an emulator
 (Android), and the app under test installed on the device.
 
 ```bash
