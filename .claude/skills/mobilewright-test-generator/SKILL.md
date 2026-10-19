@@ -1,6 +1,6 @@
 ---
 name: mobilewright-test-generator
-description: Generate Mobilewright tests for this framework from manually supplied steps and acceptance criteria. Inspects the live app's accessibility tree through mobile-mcp to build locators, then writes locators, page objects, fixtures, test data and specs following the project's coding standards. Use when asked to "create/generate a test, locators or page for <feature>", or given steps/AC to automate.
+description: Generate Mobilewright tests for this framework from manually supplied steps and acceptance criteria. Inspects the live app's accessibility tree through mobilewright-cli (mobile-mcp as fallback) to build locators, then writes locators, page objects, fixtures, test data and specs following the project's coding standards. Use when asked to "create/generate a test, locators or page for <feature>", or given steps/AC to automate.
 ---
 
 # Mobilewright test generator
@@ -23,14 +23,42 @@ Read before writing, so nothing is duplicated:
 Reuse an existing screen/page/data key whenever one fits.
 
 ### 2. Inspect the real screens
-For **each screen** touched by the steps, on **each target platform**:
-1. Use mobile-mcp to list elements on screen (e.g. `mobile_list_elements_on_screen`), after navigating there with tap/type tools.
-2. Record only interactive and asserted elements: id, label, role/type, text.
-3. Do not dump or paste whole trees. Keep what the flow needs.
 
-Fallbacks if mobile-mcp is unavailable: `npx mobilewright inspect`, or ask the user to paste `screen.viewTree()` output. If no tree is available at all, say so and stop. Never invent selectors.
+Use **`mobilewright-cli`** (`npx mobilewright-cli`, dev dependency). Fallbacks, in order: mobile-mcp
+(`mobile_list_elements_on_screen`, `mobile_batch_commands`), `npx mobilewright inspect`, a pasted `screen.viewTree()`.
+If no tree is available at all, say so and stop. Never invent selectors.
+
+Per platform (use a session per platform so both can stay open: `-s ios`, `-s android`):
+```bash
+npx mobilewright-cli devices                       # one online device is picked automatically
+npx mobilewright-cli -s ios --device <id> launch <bundleId>
+npx mobilewright-cli -s ios snapshot               # tree is written to .mobilewright-cli/, only a link is printed
+npx mobilewright-cli -s ios find --role button --name "Sign in"   # print only the matching elements + refs
+```
+
+Rules:
+- `snapshot` once per screen on arrival. Do **not** open or paste the whole snapshot file; use `find` (or search the file) for just the elements the flow touches.
+- Drive the flow with `tap` / `fill` / `type` / `button BACK` / `swipe` using refs from the latest snapshot. After each action the CLI prints a fresh snapshot link and a `Ran Mobilewright code` line; **collect those lines**, they are the real calls behind the steps.
+- Refs (`e12`) are only valid for the snapshot they came from; re-snapshot after the screen changes.
+- Snapshot line shape: `- button "Sign in" [ref=e9] [testid="login"]`. Record `testid`, role, name/label, text. Skip coordinates.
+- Run the second platform only for screens where ids are not already known to be cross-platform (user-supplied ids, or an existing locator entry).
+- Before an assertion goes into a spec, confirm it live: `npx mobilewright-cli expect visible --test-id home-welcome` (matchers: visible, hidden, enabled, disabled, checked, selected, focused, text, contain-text, value, count; `--timeout` ms).
+- Add `--json` when the output must be parsed. Use `logs --filter level=Error` and `screenshot <ref>` only when debugging, not for exploration.
 
 ### 3. Decide locators
+Translate the CLI's `Ran Mobilewright code` / `find` flags into this repo's selector objects:
+
+| CLI / generated call | Entry in `src/locators/<screen>.ts` |
+|---|---|
+| `getByTestId('x')` / `--test-id x` | `{ testId: 'x' }` |
+| `getByLabel('x')` / `--label x` | `{ label: 'x' }` |
+| `getByRole('button', { name: 'x' })` | `{ role: 'button', name: 'x' }` |
+| `getByText('x')` / `--text x` | `{ text: 'x' }` |
+| `getByPlaceholder('x')` | `{ placeholder: 'x' }` |
+| `getByType('x')` / `--type x` | `{ type: 'x' }` |
+
+The CLI's raw `screen.getBy...` calls never go into pages or specs; they only inform locator entries and page actions.
+
 Priority per element (stop at the first stable one):
 1. `testId` (accessibility id) — same on both platforms
 2. `label`

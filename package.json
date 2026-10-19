@@ -12,6 +12,7 @@
     "report": "mobilewright show-report"
   },
   "devDependencies": {
+    "@mobilewright/cli": "^0.0.67",
     "@mobilewright/test": "latest",
     "@types/node": "^20.0.0",
     "dotenv": "^18.0.7",

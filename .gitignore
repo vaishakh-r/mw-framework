@@ -6,3 +6,4 @@ playwright-report
 apps/*.apk
 apps/*.ipa
 .DS_Store
+.mobilewright-cli

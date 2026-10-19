@@ -34,14 +34,13 @@ platforms through two projects, `ios` and `android`. See `README.md` for layout 
 ## Tooling
 - `playwright.config.ts` only re-exports `mobilewright.config.ts` so the VS Code Playwright
   extension can discover tests. Real config stays in `mobilewright.config.ts`.
-- `.mcp.json` registers `mobile-mcp` (accessibility tree via a live device).
+- `@mobilewright/cli` (`npx mobilewright-cli snapshot | find | expect ...`) reads the live accessibility tree; the generator skill uses it first, `.mcp.json` registers `mobile-mcp` as fallback. CLI snapshots land in `.mobilewright-cli/` (gitignored).
 - `.env` is loaded by `dotenv` from the config; copy `.env.example` to `.env`.
 
 ## Status / known gaps
 - **Nothing has been executed on a device.** Typecheck and `--list` pass; app ids and `testId`s
   (`login-screen`, `home-welcome`, ...) are placeholders until matched to the real app.
-- mobile-mcp package name (`@mobilenext/mobile-mcp`) and the tool names mentioned in the skill
-  are from memory and unverified; confirm once the server is connected.
+- `@mobilewright/cli` is 0.0.x (pre-1.0) and `mobilewright` is 0.0.64; command syntax was checked via `--help`, not run on a device.
 - `installApps` is commented out in the config; the app must already be on the device.
 - No prod guard (e.g. skip `@destructive` when `TEST_ENV=prod`).
 - `DataUtility` has no committed unit test (was checked with a throwaway script).
