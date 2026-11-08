@@ -22,6 +22,10 @@ platforms through two projects, `ios` and `android`. See `README.md` for layout 
 ## Conventions
 - Locator priority: `testId` > `label` > `role+name` > `text` > `type`/`placeholder`.
 - Await `page.waitUntilLoaded()` on entering a screen; no hard sleeps.
+- Scrolling: `scrollToCenter(this.screen, this.loc.x, { bottomInset })` from `src/utils/scroll.ts`
+  (centres the element between header/footer; core `scrollIntoViewIfNeeded` stops behind footers), or
+  `scrollToVisibleView(...)` (same options + `margin`) to scroll only until it is fully visible above the footer.
+  Utils needing the device use `currentDevice()`, set per test by the auto fixture `_currentDevice`.
 - Test data only via `testData.get()`. Lookup: `testdata/<env>/<file>.json`, then `testdata/common/`,
   **per key**, objects deep-merged (env wins). Env files list only what differs.
   `${VAR}` / `${VAR:-default}` in strings reads an env var; keep secrets out of JSON.
@@ -36,11 +40,17 @@ platforms through two projects, `ios` and `android`. See `README.md` for layout 
   extension can discover tests. Real config stays in `mobilewright.config.ts`.
 - `@mobilewright/cli` (`npx mobilewright-cli snapshot | find | expect ...`) reads the live accessibility tree; the generator skill uses it first, `.mcp.json` registers `mobile-mcp` as fallback. CLI snapshots land in `.mobilewright-cli/` (gitignored).
 - `.env` is loaded by `dotenv` from the config; copy `.env.example` to `.env`.
+- Sauce Labs: `RUN_ON_SAUCE=true` (env or `.env`; `npm run test:sauce` sets it) switches `mobilewright.config.ts`
+  to Sauce, anything else runs locally. Sauce uses
+  `src/sauce/PerDescribeSauceLabsDriver.ts` (one device session per `test.describe`, per file outside one;
+  last one deleted by the worker fixture `_sauceSessions`). `SAUCE_*` vars in `.env.example`.
+  `@saucelabs/mobilewright-driver` pins an exact `mobilewright` version: upgrade both together, `--save-exact`.
 
 ## Status / known gaps
 - **Nothing has been executed on a device.** Typecheck and `--list` pass; app ids and `testId`s
   (`login-screen`, `home-welcome`, ...) are placeholders until matched to the real app.
-- `@mobilewright/cli` is 0.0.x (pre-1.0) and `mobilewright` is 0.0.64; command syntax was checked via `--help`, not run on a device.
+- `@mobilewright/cli` is 0.0.x (pre-1.0) and `mobilewright` / `@mobilewright/test` are 0.0.68 (pinned, for Sauce driver 0.0.3); command syntax was checked via `--help`, not run on a device.
+- The Sauce wrapper was checked with a mocked run only, never against Sauce Labs.
 - `installApps` is commented out in the config; the app must already be on the device.
 - No prod guard (e.g. skip `@destructive` when `TEST_ENV=prod`).
 - `DataUtility` has no committed unit test (was checked with a throwaway script).

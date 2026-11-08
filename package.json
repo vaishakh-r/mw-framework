@@ -9,14 +9,17 @@
     "test:ios": "mobilewright test --project=ios",
     "test:android": "mobilewright test --project=android",
     "test:smoke": "mobilewright test --grep @smoke",
-    "report": "mobilewright show-report"
+    "report": "mobilewright show-report",
+    "test:sauce": "RUN_ON_SAUCE=true mobilewright test"
   },
   "devDependencies": {
     "@mobilewright/cli": "^0.0.67",
-    "@mobilewright/test": "latest",
+    "@mobilewright/protocol": "0.0.68",
+    "@mobilewright/test": "0.0.68",
+    "@saucelabs/mobilewright-driver": "0.0.3",
     "@types/node": "^20.0.0",
     "dotenv": "^18.0.7",
-    "mobilewright": "latest",
+    "mobilewright": "0.0.68",
     "typescript": "^5.4.0"
   }
 }
