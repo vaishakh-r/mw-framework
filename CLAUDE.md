@@ -25,6 +25,7 @@ platforms through two projects, `ios` and `android`. See `README.md` for layout 
 - Scrolling: `scrollToCenter(this.screen, this.loc.x, { bottomInset })` from `src/utils/scroll.ts`
   (centres the element between header/footer; core `scrollIntoViewIfNeeded` stops behind footers), or
   `scrollToVisibleView(...)` (same options + `margin`) to scroll only until it is fully visible above the footer.
+  Both keep swipes above an open iOS keyboard (`avoidKeyboard`, default on); on Android pass its height as `bottomInset`.
   Utils needing the device use `currentDevice()`, set per test by the auto fixture `_currentDevice`.
 - Test data only via `testData.get()`. Lookup: `testdata/<env>/<file>.json`, then `testdata/common/`,
   **per key**, objects deep-merged (env wins). Env files list only what differs.

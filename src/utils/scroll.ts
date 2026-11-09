@@ -14,6 +14,11 @@ export interface ScrollOptions {
   duration?: number;
   /** x of the swipe path; move it off a horizontal carousel if needed. */
   startX?: number;
+  /**
+   * Keep swipes and the target above an open on-screen keyboard (default true). Works where the keyboard is in
+   * the accessibility tree (iOS). On Android the keyboard is usually not, so pass its height as `bottomInset`.
+   */
+  avoidKeyboard?: boolean;
 }
 
 export interface ScrollToCenterOptions extends ScrollOptions {
@@ -41,14 +46,22 @@ async function scrollUntil(
   offset: (box: Box, area: Area) => number,
   extra = 0,
 ) {
-  const { topInset = 0, bottomInset = 0, direction = 'up', maxSwipes = 10, duration = 800 } = opts;
+  const { topInset = 0, bottomInset = 0, direction = 'up', maxSwipes = 10, duration = 800, avoidKeyboard = true } = opts;
   const size = await currentDevice().screenSize();
   const top = topInset;
-  const bottom = size.height - bottomInset;
-  const area: Area = { top, bottom, middle: (top + bottom) / 2, span: bottom - top };
   const x = opts.startX ?? size.width / 2;
+  // mobilecli may report the iOS type with or without the XCUIElementType prefix.
+  const keyboard = screen.getByType('XCUIElementTypeKeyboard').or(screen.getByType('Keyboard'));
 
   for (let i = 0; i <= maxSwipes; i++) {
+    // Re-read every round: the keyboard can open or close while scrolling.
+    let bottom = size.height - bottomInset;
+    if (avoidKeyboard) {
+      const kb = await keyboard.boundingBox({ timeout: 0 }).catch(() => null);
+      if (kb && kb.y > top) bottom = Math.min(bottom, kb.y);
+    }
+    const area: Area = { top, bottom, middle: (top + bottom) / 2, span: bottom - top };
+
     const box = await target.boundingBox({ timeout: 0 }).catch(() => null);
     if (!box) {
       // Not in the tree yet: scroll half a screen and look again.
